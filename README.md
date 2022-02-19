@@ -1,26 +1,33 @@
 # ory-sandbox
 (wip) hydra &amp; kratos experiment
 
-db.koramo.com	      : pgAdmin  
-hydra.koramo.com	  : Hydra (public access)  
-kratos.koramo.com	 
-www.koramo.com  
-members.koramo.com  : consent & login  
+| FQDN | Purpose |
+|----|----|
+| db.koramo.com	      | pgAdmin |
+| hydra.koramo.com	  | Hydra (public access)   |
+| kratos.koramo.com	  | |
+| www.koramo.com      | |
+| members.koramo.com  | consent & login   |
+
+**PORTS USED IN ORY DOCS**
+
+| PORT MAP | Purpose |
+|----|----|
+| 9000:4444 | Hydra Public Port   |
+| 9001:4445 | Hydra Admin Port (back end)   |
+| 9010:9010 | Consumer App   |
+| 9020:3000 | Consent 
+
+**EXTRA SERVICE PORTS**
+
+| PORT MAP | Purpose |
+|----|----|
+| 3001:80   | Echo service   |
+| 3002:80   | pgAdmin   |
 
 -----
 
-PORTS USED IN ORY DOCS:  
-9000:4444 : Hydra Public Port  
-9001:4445 : Hydra Admin Port (back end)  
-9010:9010 : Consumer App  
-9020:3000 : Consent 
-
-OTHER PORTS  
-3001:80   : Echo service  
-3002:80   : pgAdmin  
-
-
------ HOST SETUP -----
+## Host Setup
 
 ```bash
 sudo usermod -aG docker ubuntu
@@ -31,10 +38,9 @@ sudo service nginx start
 
 sudo ufw allow 'nginx full'
 
-!!! ADD NGINX CONFIGS AT THIS POINT
-```
+**ADD NGINX CONFIGS AT THIS POINT**
 
-# verify the format of the config file is correct
+!verify the format of the config file is correct
 
 ```bash
 sudo nginx -t
@@ -45,9 +51,11 @@ sudo apt install certbot python3-certbot-nginx
 sudo certbot --nginx --agree-tos --redirect --hsts --staple-ocsp --email fred.lackey@gmail.com -d auth.koramo.com,consent.koramo.com,consumer.koramo.com,db.koramo.com,echo.koramo.com,hydra.koramo.com,kratos.koramo.com,members.koramo.com,resource.koramo.com,userapp.koramo.com,www.koramo.com,koramo.com
 ```
 
------ TESTING ONLY -----
+-----
 
-# echo-server used for testing to ensure everything is running properly with nginx without hydra (not needed in prod)
+## Testing Only
+
+echo-server used for testing to ensure everything is running properly with nginx without hydra (not needed in prod)
 
 ```bash
 docker run -d \
@@ -55,12 +63,16 @@ docker run -d \
   -p 3001:80 \
   ealen/echo-server:0.5.1
 ```
------ HYDRA NETWORK -----
+-----
+
+## Hydra Network
 
 ```bash
 docker network create hydra
 ```
------ DATABASE -----
+-----
+
+## Database
 
 ```bash
 docker run --network hydra \
@@ -70,7 +82,8 @@ docker run --network hydra \
   -e POSTGRES_DB=hydra \
   -d postgres:9.6
 ```
-# pagdmin here for convenience during testing (not needed in prod)
+pagdmin here for convenience during testing (not needed in prod)
+
 ```bash
 docker run -p 3002:80 \
   --network hydra \
@@ -81,7 +94,7 @@ docker run -p 3002:80 \
 
 export DSN=postgres://hydra:Pass1234@hydra-postgres:5432/hydra?sslmode=disable
 ```
-# build database schema by running required hydra migrations
+build database schema by running required hydra migrations
 
 ```bash
 docker run -it --rm \
@@ -90,6 +103,8 @@ docker run -it --rm \
   migrate sql --yes $DSN
 ```
 -----
+
+## Hydra
 
 from: https://www.ory.sh/docs/hydra/configure-deploy
 
@@ -103,7 +118,7 @@ from: https://www.ory.sh/docs/hydra/configure-deploy
 -e URLS_CONSENT=http://localhost:9020/consent this sets the URL of the consent provider (required). We will set up the service that handles requests at that URL in the next sections.
 -e URLS_LOGIN=http://localhost:9020/login this sets the URL of the login provider (required). We will set up the service that handles requests at that URL in the next sections.
 ```
-# modified for fqdn
+modified for fqdn
 
 ```bash
 --network hydraguide connects this instance to the network and makes it possible to connect to the PostgreSQL database.
@@ -132,9 +147,9 @@ docker run -d \
   -e URLS_LOGIN=http://consent.koramo.com/login \
   oryd/hydra:v1.11.2 serve all --dangerous-force-http
 ```
-# setup the consent app with the back end path to the hydra service
-# specify the port since it's using HTTP at a non-standard port
-# since the call to hydra is running within the hydra network, the name of the contianer is used
+setup the consent app with the back end path to the hydra service
+specify the port since it's using HTTP at a non-standard port
+since the call to hydra is running within the hydra network, the name of the contianer is used
 
 ```bash
 docker run -d \
@@ -145,12 +160,14 @@ docker run -d \
   -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
   oryd/hydra-login-consent-node:v1.10.2
 ```
-----------
+-----
 
-# the following appear to be using the localhost only because the are being used at the command line
-# in prod this would probably be performed by some type of administrative api call
+## Consumer App
 
-# use the command line to setup a local route so the next command line will be able to function  
+the following appear to be using the localhost only because the are being used at the command line
+in prod this would probably be performed by some type of administrative api call
+
+use the command line to setup a local route so the next command line will be able to function  
 
 ```bash
 docker run --rm -it \
@@ -178,7 +195,7 @@ docker run --rm -it \
     --scope openid,offline \
     --redirect http://consumer.karamo.com/callback
 ```
-# instructions originally read as follows
+instructions originally read as follows
 
 ```bash
 Setting up home route on http://127.0.0.1:9010/
@@ -188,7 +205,7 @@ If your browser does not open automatically, navigate to:
 
         http://127.0.0.1:9010/
 ```
-# but now read ...
+but now read ...
 
 ```bash
 Setting up home route on http://resource.koramo.com/
