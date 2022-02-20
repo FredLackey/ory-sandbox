@@ -78,16 +78,14 @@ Once NGNIX is running, we will use Certbot to issue proper SSL certificates and 
 ```bash
 sudo apt install certbot python3-certbot-nginx
 
-sudo certbot --nginx --agree-tos --redirect \
-  --hsts --staple-ocsp \
-  --email fred.lackey@gmail.com \
-  -d auth.koramo.com,consent.koramo.com, \
-  consumer.koramo.com,db.koramo.com, \
-  echo.koramo.com, \
-  hydra-a.koramo.com,hydra-b.koramo.com, \
-  kratos.koramo.com,members.koramo.com, \
-  resource.koramo.com,userapp.koramo.com, \
-  www.koramo.com,koramo.com
+sudo certbot --nginx --agree-tos \
+--redirect --hsts --staple-ocsp \
+--email fred.lackey@gmail.com \
+-d consent.koramo.com,db.koramo.com,\
+hydra-a.koramo.com,hydra-a-admin.koramo.com,\
+hydra-b.koramo.com,\
+www.koramo.com,koramo.com
+
 ```
 
 -----
@@ -128,7 +126,7 @@ First, the database...
 
 ```bash
 docker run --network hydra \
-  --name hydra-postgres \
+  --name hydra-a-postgres \
   -e POSTGRES_USER=hydra \
   -e POSTGRES_PASSWORD=Pass1234 \
   -e POSTGRES_DB=hydra \
@@ -151,7 +149,7 @@ Ory's documentation shows environment variables being used for common properties
 The following sytax builds the Hydra database schema by running required migrations from a command line interanl to a tempory container.
 
 ```bash
-export DSN=postgres://hydra-a:Pass1234@hydra-postgres:5432/hydra?sslmode=disable
+export DSN=postgres://hydra:Pass1234@hydra-a-postgres:5432/hydra?sslmode=disable
 
 docker run -it --rm \
   --network hydra \
@@ -343,7 +341,7 @@ docker run -d \
   oryd/hydra-login-consent-node:v1.10.2
 ```
 
-> Note the back end call using the `hydra` name only available in the Docker virtual network.  The port `4455` is used since it will make a HTTP call on a non-standard port.
+> Note the back end call using the `hydra-a` name only available in the Docker virtual network.  The port `4455` is used since it will make a HTTP call on a non-standard port.
 
 > Also note that this repo shows this admin port being wide open to the public world at the name `hydra-a-admin`.  Don't ever do this.  I'm doing it here so we can play around with Hydra in our own playground and tack on some names to these port numbers.
 
@@ -358,7 +356,7 @@ Long story short, Ory's docs have you standing up a *second* Hydra instance for 
 Once we add in the translated FQDNS, this gives us the following:
 
 **Important:**  
-**If you are following along, you may want to run this in a second terminal session since it does not return.**
+**If you are following along, and if you want to use their syntax the way they suggested, you may want to run this in a second terminal session since it does not return.**
 
 ```bash
 docker run --rm -it \
@@ -378,6 +376,17 @@ docker run --rm -it \
 Be careful at this step.  Regardlass of what you supply in this block, Hydra will still output the hard-coded garbage helper information it was designed to:
 
 ![hydra-instance-2-output](./assets/img/hydra-instance-2-output.png)
+
+If the output was correct, it _would_ have been displayed like this:
+
+```bash
+Setting up home route on http://hydra-b.koramo.com/
+Setting up callback listener on http://hydra-b.koramo.com/callback
+Press ctrl + c on Linux / Windows or cmd + c on OSX to end the process.
+If your browser does not open automatically, navigate to:
+
+        http://hydra-b.koramo.com/
+```
 
 For me, I chose to run the second instance in daemon mode and give it a name...
 
