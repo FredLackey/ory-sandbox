@@ -321,6 +321,10 @@ If done correctly, the output you should have is something like:
 
 Until this point we've been testing a single instance of Hydra and just ensuring it works.  However, the ultimate goal of OAuth is to allow muliple systems to work together.  As we continue forward, do not mix this concept with the irony that Ory was kind enough to supply samples of a front-end.  Even as we implement a second instance of Hydra, remember that, during this exercise, we are mocking a scenario where multiple organizations just happen to be using Hydra.
 
+## Caution - Hydra Instance #2
+
+The Hydra docs make use of several tempoary containers which never remain running.  The user simply runs through their one-page "setup" guide running commands.  And, to me, it feels as if thier doc was written out of sequence or someone came back and injected a missing step in a few places.  For this reason, some of the steps I take in the next section show a slightly different flow so we configure everything and then proceed with the test.
+
 -----
 
 ## Example #2: User Login & Consent Flow
@@ -344,6 +348,32 @@ docker run -d \
 > Note the back end call using the `hydra-a` name only available in the Docker virtual network.  The port `4455` is used since it will make a HTTP call on a non-standard port.
 
 > Also note that this repo shows this admin port being wide open to the public world at the name `hydra-a-admin`.  Don't ever do this.  I'm doing it here so we can play around with Hydra in our own playground and tack on some names to these port numbers.
+
+In the first example, we configured an consumer with the name "Some Consumer".  Every client allowed to make an authorization call to the system should have its own identity.  So, before we proceed with this next flow, we need to setup an identity for that client, called "Another Consumer"
+
+The Ory examples also show us using a second Hydra instance for this flow.  Keep your eye on the `callbacks` argument for the public URL of that instance.
+
+So, let's spin up a temporary container and call to our currently running Hydra instance (called, "`hydra-a`") to create the new client identity:
+
+```bash
+docker run --rm -it \
+  --network hydra \
+  oryd/hydra:v1.11.2 \
+  clients create \
+    --endpoint http://hydra-a:4445 \
+    --id another-consumer \
+    --secret consumer-secret \
+    -g authorization_code,refresh_token \
+    -r token,code,id_token \
+    --scope openid,offline \
+    --callbacks http://hydra-b.koramo.com/callback
+```
+
+The tempoary container will spin up, perform the call to create the new client, and exit.  Just before it exists, it should send the following text to the console:
+
+```bash
+OAuth 2.0 Client ID: another-consumer
+```
 
 ### Another Hydra Instance!!!
 
@@ -406,7 +436,7 @@ docker run --rm -it -d \
     --redirect http://hydra-b.koramo.com/callback
 ```
 
-
+### Add the Consumer App
 
 
 
