@@ -15,10 +15,10 @@
 
 | PORT MAP | Purpose |
 |----|----|
-| 9000:4444 | Hydra Public Port   |
-| 9001:4445 | Hydra Admin Port (back end)   |
-| 9010:9010 | Consumer App   |
-| 9020:3000 | Consent 
+| 9000:4444 | Hydra Public Port |
+| 9001:4445 | Hydra Admin Port (back end) |
+| 9010:9010 | Consumer App |
+| 9020:3000 | Consent App |
 
 **EXTRA SERVICE PORTS**
 
