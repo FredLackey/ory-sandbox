@@ -24,8 +24,8 @@
 
 | PORT MAP | Purpose |
 |----|----|
-| 3001:80   | Echo service   |
-| 3002:80   | pgAdmin   |
+| 3001:80   | Echo Server |
+| 3002:80   | pgAdmin Web Interface |
 
 -----
 
