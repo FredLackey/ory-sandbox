@@ -3,11 +3,13 @@
 
 | FQDN | Purpose |
 |----|----|
-| db.koramo.com	      | pgAdmin |
+| consent.koramo.com	| Ory Example App |
+| consumer.koramo.com	| Ory Example App |
+| db.koramo.com	      | pgAdmin Web Interface |
+| echo.koramo.com	    | Echo Server (also on www) |
 | hydra.koramo.com	  | Hydra (public access)   |
 | kratos.koramo.com	  | |
-| www.koramo.com      | |
-| members.koramo.com  | consent & login   |
+| www.koramo.com      | Echo Server (also on echo) |
 
 **PORTS USED IN ORY DOCS**
 
