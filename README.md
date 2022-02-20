@@ -1,26 +1,36 @@
 # ory-sandbox
 (wip) hydra &amp; kratos experiment
 
+-----
+
+## Helpful Information
+
+### What is Koramo.Com?
+
+The domain `koramo.com` is a garbage name of random letters I created years ago for testing purposes.  It's easy to pronouce and understand when teaching, so I keep it around for purposes like this.  Obviously, this domain will never work outside of my little testing environment.
+
+### Public DNS Names
+
 | FQDN | Purpose |
 |----|----|
-| consent.koramo.com	| Ory Example App |
-| consumer.koramo.com	| Ory Example App |
+| consent.koramo.com	| Ory Login & Consent Example App |
 | db.koramo.com	      | pgAdmin Web Interface |
 | echo.koramo.com	    | Echo Server (also on `www.`) |
-| hydra.koramo.com	  | Hydra (public access)   |
+| hydra-a.koramo.com	  | Hydra Instance #1 Public Access  |
+| hydra-b.koramo.com	  | Hydra Instance #2 Public Access  |
 | kratos.koramo.com	  | TBD |
 | www.koramo.com      | Echo Server (also on `echo.`) |
 
-**PORTS USED IN ORY DOCS**
+### Ports Used in Ory Documentation
 
 | PORT MAP | Purpose |
 |----|----|
-| 9000:4444 | Hydra Public Port |
+| 9000:4444 | Hydra A's Public Port (hidden behind NGINX) |
 | 9001:4445 | Hydra Admin Port (back end) |
-| 9010:9010 | Consumer App |
-| 9020:3000 | Consent App |
+| 9010:9010 | Hydra B's Public Port (hidden behind NGINX) |
+| 9020:3000 | Ory Login & Consent Example App |
 
-**EXTRA SERVICE PORTS**
+### Ports from Extra Helper Apps
 
 | PORT MAP | Purpose |
 |----|----|
@@ -31,6 +41,10 @@
 
 ## Host Setup
 
+The following steps are used to configure our host environment.  NGINX is installed on the host computer to assist with routing FQDNs to services and web apps listening on local ports.
+
+### NGINX Proxy Service
+
 ```bash
 sudo usermod -aG docker ubuntu
 
@@ -39,25 +53,43 @@ sudo apt-get install nginx
 sudo service nginx start
 
 sudo ufw allow 'nginx full'
+```
 
 **ADD NGINX CONFIGS AT THIS POINT**
 
-!verify the format of the config file is correct
+An example [`nginx.conf`](./nginx/nginx.conf) file is provided [here](./nginx/nginx.conf).  Use this as a boilerplate if you are following along (be sure to change the domain name to your own).
+
+After each modification to the NGINX config, verify the format of the config file is correct:
 
 ```bash
 sudo nginx -t
 sudo service nginx restart
+```
 
+### SSL Certificates
+
+Once NGNIX is running, we will use Certbot to issue proper SSL certificates and configure them within NGINX.
+
+```bash
 sudo apt install certbot python3-certbot-nginx
 
-sudo certbot --nginx --agree-tos --redirect --hsts --staple-ocsp --email fred.lackey@gmail.com -d auth.koramo.com,consent.koramo.com,consumer.koramo.com,db.koramo.com,echo.koramo.com,hydra.koramo.com,kratos.koramo.com,members.koramo.com,resource.koramo.com,userapp.koramo.com,www.koramo.com,koramo.com
+sudo certbot --nginx --agree-tos --redirect \
+  --hsts --staple-ocsp \
+  --email fred.lackey@gmail.com \
+  -d auth.koramo.com,consent.koramo.com, \
+  consumer.koramo.com,db.koramo.com, \
+  echo.koramo.com, \
+  hydra-a.koramo.com,hydra-b.koramo.com, \
+  kratos.koramo.com,members.koramo.com, \
+  resource.koramo.com,userapp.koramo.com, \
+  www.koramo.com,koramo.com
 ```
 
 -----
 
-## Testing Only
+## Echo Server
 
-echo-server used for testing to ensure everything is running properly with nginx without hydra (not needed in prod)
+The use of the `echo-server` project provides a means of testing basic NGINX functionality before proceeding with the setup of Hydra.  It is not needed in production.  
 
 ```bash
 docker run -d \
@@ -65,9 +97,18 @@ docker run -d \
   -p 3001:80 \
   ealen/echo-server:0.5.1
 ```
+
+At this point you should be able to access the Echo Server at any of the following URLs:
+
+* `koramo.com` (no server name)
+* `echo.koramo.com`
+* `www.koramo.com`
+
 -----
 
 ## Hydra Network
+
+All name resolution between Docker containers happens within a virutal network.  
 
 ```bash
 docker network create hydra
@@ -75,6 +116,10 @@ docker network create hydra
 -----
 
 ## Database
+
+Postgres is the chosen database within the Ory examples for Hydra.  For our convience, I have added pgAdmin to the mix.  For me, examining the data after each step helps cement the function in my mind and actuall _see_ what is happening.
+
+First, the database...
 
 ```bash
 docker run --network hydra \
@@ -84,7 +129,8 @@ docker run --network hydra \
   -e POSTGRES_DB=hydra \
   -d postgres:9.6
 ```
-pagdmin here for convenience during testing (not needed in prod)
+
+... and now, pgAdmin...
 
 ```bash
 docker run -p 3002:80 \
@@ -93,12 +139,15 @@ docker run -p 3002:80 \
   -e 'PGADMIN_DEFAULT_EMAIL=fred.lackey@gmail.com' \
   -e 'PGADMIN_DEFAULT_PASSWORD=Pass1234!' \
   -d dpage/pgadmin4
-
-export DSN=postgres://hydra:Pass1234@hydra-postgres:5432/hydra?sslmode=disable
 ```
-build database schema by running required hydra migrations
+
+Ory's documentation shows environment variables being used for common properties.  It's a bit annoying since the provided syntax only works in a Linux environment (sorry Windows nerds).
+
+The following sytax builds the Hydra database schema by running required migrations from a command line interanl to a tempory container.
 
 ```bash
+export DSN=postgres://hydra:Pass1234@hydra-postgres:5432/hydra?sslmode=disable
+
 docker run -it --rm \
   --network hydra \
   oryd/hydra:v1.11.2 \
@@ -108,7 +157,11 @@ docker run -it --rm \
 
 ## Hydra
 
-from: https://www.ory.sh/docs/hydra/configure-deploy
+The Ory documentation is horrible with their never-ending use of ports instead of FQDNs.  Below is a "before and after," with the names changed to something more human-readable.  I hope this helps.
+
+> Taken from: https://www.ory.sh/docs/hydra/configure-deploy
+
+### Original
 
 ```bash
 --network hydraguide connects this instance to the network and makes it possible to connect to the PostgreSQL database.
@@ -120,15 +173,15 @@ from: https://www.ory.sh/docs/hydra/configure-deploy
 -e URLS_CONSENT=http://localhost:9020/consent this sets the URL of the consent provider (required). We will set up the service that handles requests at that URL in the next sections.
 -e URLS_LOGIN=http://localhost:9020/login this sets the URL of the login provider (required). We will set up the service that handles requests at that URL in the next sections.
 ```
-modified for fqdn
+### Modified
 
 ```bash
 --network hydraguide connects this instance to the network and makes it possible to connect to the PostgreSQL database.
--p 9000:4444 exposes Ory Hydra's public API on https://hydra.koramo.com/.
+-p 9000:4444 exposes Ory Hydra's public API on https://hydra-a.koramo.com/.
 -p 9001:4445 exposes Ory Hydra's administrative API on https://localhost:9001/.
 -e SECRETS_SYSTEM=$SECRETS_SYSTEM sets the system secret environment variable (required).
 -e DSN=$DSN sets the database url environment variable (required).
--e URLS_SELF_ISSUER=https://hydra.koramo.com/ this value must be set to the publicly available URL of Ory Hydra (required).
+-e URLS_SELF_ISSUER=https://hydra-a.koramo.com/ this value must be set to the publicly available URL of Ory Hydra (required).
 -e URLS_CONSENT=http://consent.koramo.com/consent this sets the URL of the consent provider (required). We will set up the service that handles requests at that URL in the next sections.
 -e URLS_LOGIN=http://consent.koramo.com/login this sets the URL of the login provider (required). We will set up the service that handles requests at that URL in the next sections.
 ```
@@ -144,14 +197,136 @@ docker run -d \
   -p 9001:4445 \
   -e SECRETS_SYSTEM=$SECRETS_SYSTEM \
   -e DSN=$DSN \
-  -e URLS_SELF_ISSUER=http://hydra.koramo.com/ \
+  -e URLS_SELF_ISSUER=http://hydra-a.koramo.com/ \
   -e URLS_CONSENT=http://consent.koramo.com/consent \
   -e URLS_LOGIN=http://consent.koramo.com/login \
   oryd/hydra:v1.11.2 serve all --dangerous-force-http
 ```
-setup the consent app with the back end path to the hydra service
-specify the port since it's using HTTP at a non-standard port
-since the call to hydra is running within the hydra network, the name of the contianer is used
+
+-----
+
+## Example #1 - Client Credentials Flow
+
+As discusssed in the Ory docs section titled, "Performing the OAuth2 Client Credentials Flow":
+
+> The easiest OAuth2 flow to try out is the Client Credentials Flow. To perform the flow we:
+>  
+>  a. create an OAuth 2.0 Client;  
+>  b. perform the OAuth 2.0 Client Credentials Flow;  
+>  c. Receive an OAuth 2.0 Access Token.  
+
+From Oauth.NET:
+
+> The Client Credentials grant type is used by clients to obtain an access token outside of the context of a user.
+>  
+> This is typically used by clients to access resources about themselves rather than to access a user's resources.
+> 
+> Reading:  
+> https://oauth.net/2/grant-types/client-credentials/
+
+### Step 1: Configure the client parameters for the flow
+
+It is important to stress the Client Credentials Flow is a generally a *private* flow and does not use the client's browser.  
+
+The following syntax uses a temporary / short-running container to invoke a single command.  This command Creates a new client, called "some-consumer" and tells Hydra to allow the "Client Credentials" grant type:
+
+```bash
+docker run --rm -it \
+  --network hydra \
+  oryd/hydra:v1.11.2 \
+  clients create \
+    --endpoint http://hydra:4445 \
+    --id some-consumer \
+    --secret some-secret \
+    --grant-types client_credentials \
+    --response-types token,code
+```
+
+### Step 2: Test Issuing the Token
+
+The first step in the Client Credentials flow is to request an Access Token.  We use another short-lived Docker container to pass in the Client ID and Client Secret for this:
+
+```bash
+docker run --rm -it \
+  --network hydra \
+  oryd/hydra:v1.11.2 \
+  token client \
+    --client-id some-consumer \
+    --client-secret some-secret \
+    --endpoint http://hydra:4444
+```
+
+> Note the that container is name is used for the endpoint.  This is because all of these calls are happening within the Docker network.  And, since they are all HTTP calls but _NOT_ on the default HTTP port, we must specify the port number the Hydra service is listening on.
+
+The output of this command will be a single string of text (the token).  If you are following along, copy this into your clipboard buffer.  The one shown in the Ory docs is:
+
+`ZcE0YWqnxemENLyJrjjlAHlFkdwaHB6TzkSi0c289HI.GQmXJsAYcw5de97S6mqOL0yB2UyFEf4DiXEM05vdfdY`
+
+### Step 3: Validate the token
+
+This token is not meant to be publicly read, like with a JWT.  Instead, one last short-lived Hydra container is used to test the validity of the token.
+
+Pasting in the the token would cause their example:
+
+```bash
+docker run --rm -it \
+  --network hydra \
+  oryd/hydra:v1.11.2 \
+  token introspect \
+    --endpoint http://hydra:4445 \
+    >INSERT-TOKEN-HERE<
+```
+... to look like _this_...
+
+```bash
+docker run --rm -it \
+  --network hydra \
+  oryd/hydra:v1.11.2 \
+  token introspect \
+    --endpoint http://hydra:4445 \
+    ZcE0YWqnxemENLyJrjjlAHlFkdwaHB6TzkSi0c289HI.GQmXJsAYcw5de97S6mqOL0yB2UyFEf4DiXEM05vdfdY
+```
+
+Of course, don't use exactly what you see above.  This token won't exist in your system.  If you do, you'll see something like this:
+
+```json
+{
+  "active": false,
+  "aud": null
+}
+```
+
+If done correctly, the output you should have is something like:
+
+```json
+{
+  "active": true,
+  "aud": [],
+  "client_id": "some-consumer",
+  "exp": 1645372014,
+  "iat": 1645368414,
+  "iss": "http://hydra-a.koramo.com/",
+  "nbf": 1645368414,
+  "sub": "some-consumer",
+  "token_type": "Bearer",
+  "token_use": "access_token"
+}
+```
+-----
+
+## Recap & Level Set
+
+Until this point we've been testing a single instance of Hydra and just ensuring it works.  However, the ultimate goal of OAuth is to allow muliple systems to work together.  As we continue forward, do not mix this concept with the irony that Ory was kind enough to supply samples of a front-end.  Even as we implement a second instance of Hydra, remember that, during this exercise, we are mocking a scenario where multiple organizations just happen to be using Hydra.
+
+-----
+
+## Example #2: User Login & Consent Flow
+
+The first example, above, was all command line and back end.  In my opinion, it's not what anything thinks of when first looking at OAuth.  More than likely they are thinking about how to use it for login purposes.  This is the next example the Ory docs show.
+
+### Login & Consent Example App
+
+It is important to remember the example we are using is one where your organization will own the entire authentication system.  Hydra itself only contains the underlying key logic and does not provide a user interface.  You stand it up and tuck it away behind the scenes.  Your "entrance" application is what is presented to the end user.  For that, Ory has provided an example app called, "Login & Consent".
 
 ```bash
 docker run -d \
@@ -162,9 +337,51 @@ docker run -d \
   -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
   oryd/hydra-login-consent-node:v1.10.2
 ```
------
 
-## Consumer App
+> Note the back end call using the `hydra` name only available in the Docker virtual network.  The port `4455` is used since it will make a HTTP call on a non-standard port.
+
+### Another Hydra Instance!!!
+
+This confused the heck out of me when I first saw it.  It's proof the Ory docs are horrible.  I'm adding it here to expain why the Ory docs show it.
+
+Long story short, Ory's docs have you standing up a *second* Hydra instance for the purpose of handling half of the flow.  This is what the docs show:
+
+![hydra-instance-2-block](./assets/img/hydra-instance-2-block.png)
+
+Once we add in the translated FQDNS, this gives us the following:
+
+**Important:**  
+**If you are following along, you may want to run this in a second terminal session since it does not return.**
+
+```bash
+docker run --rm -it \
+  --network hydra \
+  -p 9010:9010 \
+  oryd/hydra:v1.11.2 \
+  token user \
+    --port 9010 \
+    --auth-url http://hydra-a.koramo.com/oauth2/auth \
+    --token-url http://hydra:4444/oauth2/token \
+    --client-id another-consumer \
+    --client-secret consumer-secret \
+    --scope openid,offline \
+    --redirect http://hydra-b.koramo.com/callback
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Consumer App
 
 the following appear to be using the localhost only because the are being used at the command line
 in prod this would probably be performed by some type of administrative api call
