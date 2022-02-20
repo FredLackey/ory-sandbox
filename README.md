@@ -6,10 +6,10 @@
 | consent.koramo.com	| Ory Example App |
 | consumer.koramo.com	| Ory Example App |
 | db.koramo.com	      | pgAdmin Web Interface |
-| echo.koramo.com	    | Echo Server (also on www) |
+| echo.koramo.com	    | Echo Server (also on `www.`) |
 | hydra.koramo.com	  | Hydra (public access)   |
 | kratos.koramo.com	  | TBD |
-| www.koramo.com      | Echo Server (also on echo) |
+| www.koramo.com      | Echo Server (also on `echo.`) |
 
 **PORTS USED IN ORY DOCS**
 
