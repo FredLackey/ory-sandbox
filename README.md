@@ -9,6 +9,10 @@
 
 The domain `koramo.com` is a garbage name of random letters I created years ago for testing purposes.  It's easy to pronouce and understand when teaching, so I keep it around for purposes like this.  Obviously, this domain will never work outside of my little testing environment.
 
+### About the Public Ports
+
+The purpose of this repo is to provide a "closer-to-real-world" example of the Ory Hydra setup without using ports everywhere.  I find their docs difficult to read because of their overuse of ports combined with the lack of real-world scenarios.  **In no way** am I advocating for anyone to open all of these ports to the public or to even advertise them by name in your zone files.  I am simply trying to add some clarity and labels to something that, at first glance, is too geek-like for anyone to easily wrap their head around.
+
 ### Public DNS Names
 
 | FQDN | Purpose |
@@ -17,6 +21,7 @@ The domain `koramo.com` is a garbage name of random letters I created years ago 
 | db.koramo.com	      | pgAdmin Web Interface |
 | echo.koramo.com	    | Echo Server (also on `www.`) |
 | hydra-a.koramo.com	  | Hydra Instance #1 Public Access  |
+| hydra-a-admin.koramo.com	  | Hydra Instance #1 Public Access  |
 | hydra-b.koramo.com	  | Hydra Instance #2 Public Access  |
 | kratos.koramo.com	  | TBD |
 | www.koramo.com      | Echo Server (also on `echo.`) |
@@ -25,9 +30,9 @@ The domain `koramo.com` is a garbage name of random letters I created years ago 
 
 | PORT MAP | Purpose |
 |----|----|
-| 9000:4444 | Hydra A's Public Port (hidden behind NGINX) |
-| 9001:4445 | Hydra Admin Port (back end) |
-| 9010:9010 | Hydra B's Public Port (hidden behind NGINX) |
+| 9000:4444 | Hydra A's Public Port |
+| 9001:4445 | Hydra A's Admin Port |
+| 9010:9010 | Hydra B's Public Port |
 | 9020:3000 | Ory Login & Consent Example App |
 
 ### Ports from Extra Helper Apps
@@ -146,7 +151,7 @@ Ory's documentation shows environment variables being used for common properties
 The following sytax builds the Hydra database schema by running required migrations from a command line interanl to a tempory container.
 
 ```bash
-export DSN=postgres://hydra:Pass1234@hydra-postgres:5432/hydra?sslmode=disable
+export DSN=postgres://hydra-a:Pass1234@hydra-postgres:5432/hydra?sslmode=disable
 
 docker run -it --rm \
   --network hydra \
@@ -178,7 +183,7 @@ The Ory documentation is horrible with their never-ending use of ports instead o
 ```bash
 --network hydraguide connects this instance to the network and makes it possible to connect to the PostgreSQL database.
 -p 9000:4444 exposes Ory Hydra's public API on https://hydra-a.koramo.com/.
--p 9001:4445 exposes Ory Hydra's administrative API on https://localhost:9001/.
+-p 9001:4445 exposes Ory Hydra's administrative API on https://hydra-a-admin.koramo.com/.
 -e SECRETS_SYSTEM=$SECRETS_SYSTEM sets the system secret environment variable (required).
 -e DSN=$DSN sets the database url environment variable (required).
 -e URLS_SELF_ISSUER=https://hydra-a.koramo.com/ this value must be set to the publicly available URL of Ory Hydra (required).
@@ -191,7 +196,7 @@ The Ory documentation is horrible with their never-ending use of ports instead o
 export SECRETS_SYSTEM=Pass1234Pass1234
 
 docker run -d \
-  --name hydra \
+  --name hydra-a \
   --network hydra \
   -p 9000:4444 \
   -p 9001:4445 \
@@ -235,7 +240,7 @@ docker run --rm -it \
   --network hydra \
   oryd/hydra:v1.11.2 \
   clients create \
-    --endpoint http://hydra:4445 \
+    --endpoint http://hydra-a:4445 \
     --id some-consumer \
     --secret some-secret \
     --grant-types client_credentials \
@@ -253,7 +258,7 @@ docker run --rm -it \
   token client \
     --client-id some-consumer \
     --client-secret some-secret \
-    --endpoint http://hydra:4444
+    --endpoint http://hydra-a:4444
 ```
 
 > Note the that container is name is used for the endpoint.  This is because all of these calls are happening within the Docker network.  And, since they are all HTTP calls but _NOT_ on the default HTTP port, we must specify the port number the Hydra service is listening on.
@@ -273,7 +278,7 @@ docker run --rm -it \
   --network hydra \
   oryd/hydra:v1.11.2 \
   token introspect \
-    --endpoint http://hydra:4445 \
+    --endpoint http://hydra-a:4445 \
     >INSERT-TOKEN-HERE<
 ```
 ... to look like _this_...
@@ -283,7 +288,7 @@ docker run --rm -it \
   --network hydra \
   oryd/hydra:v1.11.2 \
   token introspect \
-    --endpoint http://hydra:4445 \
+    --endpoint http://hydra-a:4445 \
     ZcE0YWqnxemENLyJrjjlAHlFkdwaHB6TzkSi0c289HI.GQmXJsAYcw5de97S6mqOL0yB2UyFEf4DiXEM05vdfdY
 ```
 
@@ -326,25 +331,27 @@ The first example, above, was all command line and back end.  In my opinion, it'
 
 ### Login & Consent Example App
 
-It is important to remember the example we are using is one where your organization will own the entire authentication system.  Hydra itself only contains the underlying key logic and does not provide a user interface.  You stand it up and tuck it away behind the scenes.  Your "entrance" application is what is presented to the end user.  For that, Ory has provided an example app called, "Login & Consent".
+It is important to remember the example we are using is one where your organization will own the entire authentication system.  Hydra itself only contains the underlying key logic and does not provide a user interface.  You stand it up and tuck it away behind the scenes.  Your "entrance" application is what is presented to the end user and will make a back-end call to your private instance of Hydra (on the Docker virtual network).  For that, Ory has provided an example app called, "Login & Consent".
 
 ```bash
 docker run -d \
   --network hydra \
   --name hydra-consent \
   -p 9020:3000 \
-  -e HYDRA_ADMIN_URL=http://hydra:4455 \
+  -e HYDRA_ADMIN_URL=http://hydra-a:4455 \
   -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
   oryd/hydra-login-consent-node:v1.10.2
 ```
 
 > Note the back end call using the `hydra` name only available in the Docker virtual network.  The port `4455` is used since it will make a HTTP call on a non-standard port.
 
+> Also note that this repo shows this admin port being wide open to the public world at the name `hydra-a-admin`.  Don't ever do this.  I'm doing it here so we can play around with Hydra in our own playground and tack on some names to these port numbers.
+
 ### Another Hydra Instance!!!
 
-This confused the heck out of me when I first saw it.  It's proof the Ory docs are horrible.  I'm adding it here to expain why the Ory docs show it.
+This confused the heck out of me when I first saw it.  It's proof the Ory docs are horrible.  I plan on writing a second follow-up to this using a real-world scenario with application names and the like.  However, for now, we are simply expanding on Ory's body of work to add a bit of clarity.
 
-Long story short, Ory's docs have you standing up a *second* Hydra instance for the purpose of handling half of the flow.  This is what the docs show:
+Long story short, Ory's docs have you standing up a *second* Hydra instance for the purpose of handling half of the User Login & Consent flow.  This is what the docs show:
 
 ![hydra-instance-2-block](./assets/img/hydra-instance-2-block.png)
 
@@ -361,16 +368,34 @@ docker run --rm -it \
   token user \
     --port 9010 \
     --auth-url http://hydra-a.koramo.com/oauth2/auth \
-    --token-url http://hydra:4444/oauth2/token \
+    --token-url http://hydra-a:4444/oauth2/token \
     --client-id another-consumer \
     --client-secret consumer-secret \
     --scope openid,offline \
     --redirect http://hydra-b.koramo.com/callback
 ```
 
+Be careful at this step.  Regardlass of what you supply in this block, Hydra will still output the hard-coded garbage helper information it was designed to:
 
+![hydra-instance-2-output](./assets/img/hydra-instance-2-output.png)
 
+For me, I chose to run the second instance in daemon mode and give it a name...
 
+```bash
+docker run --rm -it -d \
+  --network hydra \
+  --name hydra-b \
+  -p 9010:9010 \
+  oryd/hydra:v1.11.2 \
+  token user \
+    --port 9010 \
+    --auth-url http://hydra-a.koramo.com/oauth2/auth \
+    --token-url http://hydra-a:4444/oauth2/token \
+    --client-id another-consumer \
+    --client-secret consumer-secret \
+    --scope openid,offline \
+    --redirect http://hydra-b.koramo.com/callback
+```
 
 
 
@@ -393,7 +418,7 @@ docker run --rm -it \
   --network hydra \
   oryd/hydra:v1.11.2 \
   clients create \
-    --endpoint http://hydra:4445 \
+    --endpoint http://hydra-a:4445 \
     --id another-consumer \
     --secret consumer-secret \
     -g authorization_code,refresh_token \
