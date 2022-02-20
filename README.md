@@ -3,6 +3,11 @@
 
 -----
 
+**NOT WORKING**  
+**This repo is a work in progress.  I've just started it.  As of right now, it does not work.**  
+
+-----
+
 ## Helpful Information
 
 ### What is Koramo.Com?
