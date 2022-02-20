@@ -8,7 +8,7 @@
 | db.koramo.com	      | pgAdmin Web Interface |
 | echo.koramo.com	    | Echo Server (also on www) |
 | hydra.koramo.com	  | Hydra (public access)   |
-| kratos.koramo.com	  | |
+| kratos.koramo.com	  | TBD |
 | www.koramo.com      | Echo Server (also on echo) |
 
 **PORTS USED IN ORY DOCS**
