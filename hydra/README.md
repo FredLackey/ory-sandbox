@@ -10,7 +10,10 @@ For this solution to work, we need a mechanism for hiding the Ory ports behind a
 
 ![comparison-001](./assets/img/comparison-001.png)
 
-asdf
+## Network & Database
+
+No real difference here.  The only thing I added was some static test values for the two environment variables Ory suggested you use.
+
 ![comparison-002](./assets/img/comparison-002.png)
 
 asdf
