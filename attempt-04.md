@@ -24,7 +24,7 @@ docker run -it --rm \
 ```
 -----
 
-**REQUIRED - OUT OF SEQUENCE - BEGIN**  
+**REQUIRED - OUT OF SEQUENCE FROM OFFICIAL DOCS**  
 
 ```bash
 docker run -d \
