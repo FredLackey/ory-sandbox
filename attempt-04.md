@@ -1,7 +1,9 @@
 # Modified / Using Public IP with SSL
+Working publicly
 
-# Failed because HTTP was being used and not HTTPS
+-----
 
+```bash
 docker network create hydraguide
 
 docker run --network hydraguide \
@@ -19,9 +21,12 @@ docker run -it --rm \
   --network hydraguide \
   oryd/hydra:v1.11.2 \
   migrate sql --yes $DSN
-
+```
 -----
 
+**REQUIRED - OUT OF SEQUENCE - BEGIN**  
+
+```bash
 docker run -d \
   --name ory-hydra-example--consent \
   -p 9020:3000 \
@@ -29,10 +34,11 @@ docker run -d \
   -e HYDRA_ADMIN_URL=http://ory-hydra-example--hydra:4445 \
   -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
   oryd/hydra-login-consent-node:v1.10.2
+```
 
 -----
 
-
+```bash
 docker run -d \
   --name ory-hydra-example--hydra \
   --network hydraguide \
@@ -97,3 +103,4 @@ docker run --rm -it -d \
     --redirect https://hydra-b.koramo.com/callback
 
 https://hydra-b.koramo.com
+```

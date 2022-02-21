@@ -1,6 +1,7 @@
 # Modified / Using Public IP
+Failed because HTTP was being used and not HTTPS
 
-# Failed because HTTP was being used and not HTTPS
+-----
 
 docker network create hydraguide
 
