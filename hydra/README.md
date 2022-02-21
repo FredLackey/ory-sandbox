@@ -16,7 +16,10 @@ No real difference here.  The only thing I added was some static test values for
 
 ![comparison-002](./assets/img/comparison-002.png)
 
-asdf
+## Example Consent Application
+
+The original docs have you setup an example Consent applicaiton later on in the process.  I suggest you move it up further to the top, and add it first, so we have a simple Ory service to call upon, test name resolution, and start mapping the ports.  Not a big change.
+
 ![comparison-003](./assets/img/comparison-003.png)
 
 asdf
