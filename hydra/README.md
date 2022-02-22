@@ -40,7 +40,16 @@ A temporary instance of Hydra is used to insert a new client identifier into the
 
 ![Prepare for the Second Hydra Instance](./assets/img/comparison-006.png)
 
-asdf
-![comparison-007](./assets/img/comparison-007.png)
+## Surprise!  Hydra Instance #2
+
+For me, the use of a _second_ Hydra instance was most upsetting aspect of the original document.  The author did not discuss why a second instance was needed.  No mention of how this relates to a real-world OAuth scenario appears in the document.  And, there is such an overuse of port numbers and generic names that the notion of a second instance almost vanishes under the covers.
+
+Another annoying aspect was the document instructs the user to blindly launch this new instance as an interactive container which blocks the current terminal session.  Granted, the document was clearly written for the reader to follow along on their workstation, however that's the problem; it only ever disucsses this one singular instance of _watching_ Hydra magically run, do _something_ and then disappear.
+
+Finally, even _if_ you were to run this next section as an interactive container, the user is presented with bogus information.  In our example we used fully-qualified machine names for each endpoint.  And, those names were supplied to this interactive container as environment variables.  However, Hydra completely _ignores_ those machine names when outputting the helper text at the bottom of the reader's terminal.  So, unless you blindly use `127.0.0.1` for every address in _your_ syntax, the helper text displayed is always wrong.  The text you see on the comparison, below, was replaced by me just in case someone fails to read _this_ text.
+
+Anyway, the supplied version of the code launches the second Hydra instance in daemon mode so the reader has their command prompt back.  Oh, and the incorrect helper text is never displayed.
+
+![Surprise!  Hydra Instance #2](./assets/img/comparison-007.png)
 
 asdf
