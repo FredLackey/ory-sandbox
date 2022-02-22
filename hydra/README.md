@@ -12,11 +12,11 @@ Two primary files exist to help you stand up Hydra: the NGINX config file and th
 | [`files/syntax.sh`](./files/syntax.sh) | Same syntax file but in a text format, just in case |
 | [`COMPARISON.md`](COMPARISON.md) | Visual side-by-side comparison of my version versus Ory's |
 
-### About the Public Ports
+## Public Ports
 
 The purpose of this repo is to provide a "closer-to-real-world" example of the Ory Hydra setup without using ports everywhere.  I find their docs difficult to read because of their overuse of ports combined with the lack of real-world scenarios.  **In no way** am I advocating for anyone to open all of these ports to the public or to even advertise them by name in your zone files.  I am simply trying to add some clarity and labels to something that, at first glance, is too geek-like for anyone to easily wrap their head around.
 
-### Public DNS Names
+## Public DNS Names
 
 | FQDN | Purpose |
 |----|----|
@@ -29,7 +29,7 @@ The purpose of this repo is to provide a "closer-to-real-world" example of the O
 | kratos.koramo.com	  | TBD |
 | www.koramo.com      | Echo Server (also on `echo.`) |
 
-### Ports Used in Ory Documentation
+## Ports Used in Ory Documentation
 
 | PORT MAP | Purpose |
 |----|----|
@@ -38,7 +38,7 @@ The purpose of this repo is to provide a "closer-to-real-world" example of the O
 | 9010:9010 | Hydra B's Public Port |
 | 9020:3000 | Ory Login & Consent Example App |
 
-### Ports from Extra Helper Apps
+## Ports from Extra Helper Apps
 
 | PORT MAP | Purpose |
 |----|----|
