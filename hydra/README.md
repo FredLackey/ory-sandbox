@@ -34,8 +34,11 @@ We already tackled the install of the example Consent application a few steps ag
 
 ![(Already Completed) Example Consent Application](./assets/img/comparison-005.png)
 
-asdf
-![comparison-006](./assets/img/comparison-006.png)
+## Prepare for the Second Hydra Instance
+
+A temporary instance of Hydra is used to insert a new client identifier into the database.  This is where name resolution is important as that last line in the Docker syntax needs to create a callback to the _second_ Hydra instance we are about to stand up.
+
+![Prepare for the Second Hydra Instance](./assets/img/comparison-006.png)
 
 asdf
 ![comparison-007](./assets/img/comparison-007.png)
