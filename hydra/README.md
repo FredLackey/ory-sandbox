@@ -20,28 +20,28 @@ The purpose of this repo is to provide a "closer-to-real-world" example of the O
 
 | FQDN | Purpose |
 |----|----|
-| consent.koramo.com	| Ory Login & Consent Example App |
-| db.koramo.com	      | pgAdmin Web Interface |
-| echo.koramo.com	    | Echo Server (also on `www.`) |
-| hydra-a.koramo.com	  | Hydra Instance #1 Public Access  |
-| hydra-a-admin.koramo.com	  | Hydra Instance #1 Public Access  |
-| hydra-b.koramo.com	  | Hydra Instance #2 Public Access  |
-| kratos.koramo.com	  | TBD |
-| www.koramo.com      | Echo Server (also on `echo.`) |
+| `consent.koramo.com`	| Ory Login & Consent Example App |
+| `db.koramo.com`	      | pgAdmin Web Interface |
+| `echo.koramo.com`	    | Echo Server (also on `www.`) |
+| `hydra-a.koramo.com`	  | Hydra Instance #1 Public Access  |
+| `hydra-a-admin.koramo.com`	  | Hydra Instance #1 Public Access  |
+| `hydra-b.koramo.com`	  | Hydra Instance #2 Public Access  |
+| `kratos.koramo.com`	  | TBD |
+| `www.koramo.com`      | Echo Server (also on `echo.`) |
 
 ## Ports Used in Ory Documentation
 
 | PORT MAP | Purpose |
 |----|----|
-| 9000:4444 | Hydra A's Public Port |
-| 9001:4445 | Hydra A's Admin Port |
-| 9010:9010 | Hydra B's Public Port |
-| 9020:3000 | Ory Login & Consent Example App |
+| `9000:4444` | Hydra A's Public Port |
+| `9001:4445` | Hydra A's Admin Port |
+| `9010:9010` | Hydra B's Public Port |
+| `9020:3000` | Ory Login & Consent Example App |
 
 ## Ports from Extra Helper Apps
 
 | PORT MAP | Purpose |
 |----|----|
-| 3001:80   | Echo Server |
-| 3002:80   | pgAdmin Web Interface |
+| `3001:80`   | Echo Server |
+| `3002:80`   | pgAdmin Web Interface |
 
