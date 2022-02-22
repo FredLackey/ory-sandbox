@@ -1,5 +1,5 @@
 
-# [ory-sandbox](../) / Hydra
+# [ory-sandbox](https://github.com/FredLackey/ory-sandbox) / Hydra
 
 ## Files
 
