@@ -24,7 +24,7 @@ The original docs have you setup an example Consent applicaiton later on in the 
 
 ## Primary Hydra Instance & Client Credentials Flow
 
-One of the oddities not discussed in the original document is that Ory actually uses _two_ separate service instances of the Hydra product.  In this next section they stand up the primary Hydra instance and blas through the Client Credentials flow.
+One of the oddities not discussed in the original document is that Ory actually uses _two_ separate service instances of the Hydra product.  In this next section they stand up the primary Hydra instance and blas through the Client Credentials flow.  What is important to point out in this section is the actual public name of both Hydra and the Consent application; something that was not very clear in the original document.
 
 ![Primary Hydra Instance](./assets/img/comparison-004.png)
 
