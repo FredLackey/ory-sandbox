@@ -8,7 +8,7 @@ Ory Hydra &amp; Kratos Experiment
 
 -----
 
-If you want to skip to the Hydra info, go to the [hydra](./hydra/README.md) folder or [click here](./hydra/README.md).
+If you want to skip to the Hydra info, go to the [hydra](./hydra) folder or [click here](./hydra).
 
 -----
 
