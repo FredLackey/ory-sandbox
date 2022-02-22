@@ -1,5 +1,5 @@
 
-# [ory-sandbox](../README.md) / Hydra
+# [ory-sandbox](../) / Hydra
 
 ## Files
 
